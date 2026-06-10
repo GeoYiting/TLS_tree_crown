@@ -1,0 +1,18 @@
+conda activate
+conda update -y -n base -c defaults conda
+
+conda create --name ccTLS python=3.10
+conda activate ccTLS
+conda config --add channels conda-forge
+conda config --set channel_priority flexible
+
+conda install -y numpy=1.26 scipy=1.14.1
+conda install -y pytorch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 pytorch-cuda=12.1 -c pytorch -c nvidia # woodcl
+pip install torch-cluster==1.6.3 -f https://data.pyg.org/whl/torch-2.3.1+cu121.html # FSCT
+conda install -y pandas=2.2.2 pyarrow=14.0.1 gdal=3.8.0 cgal=5.6.1 boost=1.84.0
+conda install -y opencv=4.8.1 pcl=1.14.1 pdal=2.6.0 cmake draco=1.5.7 ffmpeg=6.1.1 laszip=3.4.3 matplotlib=3.9.1 mpir=3.0.0 openmp=8.0.1
+conda install -y mysql=8.0.33 psutil=6.0.0 pybind11=2.13.6 quaternion=2024.0.3 qhull=2020.2 qt=5.15.8 sphinx_rtd_theme=3.0.1 tbb=2021.13.0 tbb-devel=2021.13.0 xerces-c=3.2.5 
+conda install -y pyg -c pyg # FSCT
+conda install -y scikit-learn=1.5.2 # FSCT woodcl
+conda install -y numpy-indexed=0.3.7 # woodcl
+conda install -y timm=1.0.11 # woodcl

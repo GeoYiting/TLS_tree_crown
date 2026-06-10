@@ -1,0 +1,122 @@
+overwrite: False
+
+preprocessing:  
+
+  # Crop option
+  radius : 5  # Only keep points within this horizontal distance to scanner. Use np.nan to not crop the point cloud
+
+  # Workflow steps to perform
+  filter_noise : True
+  filter_ground : True
+  get_aboveground_height : True
+  subsample : True # Use subsampled file for classification
+
+  classification : True
+  classification_method : 'woodcl' # For all sites except tropical
+  #classification_method : 'FSCT' # For Luquillo, PR only
+
+
+  voxelization : True
+  countbins : True # Count points in bins of scanning angle and height for plant area and leaf area estimates
+  calc_PAVD : True
+
+  subsample_para:
+        step: 0.01      # voxel/grid step size in meters (used if method = grid)
+ 
+  ##############################################################################
+  # Below are parameters/options for each step that are less likely needed to be modified
+
+  # cropping
+  write_cropped : False # Write cropped pointcloud without any processing 
+
+  # ground filtering
+  write_ground : True # Write ground points to file
+  write_aboveground : True # recommend True, will be useful for PAVD estimation if running the step separately
+  CSFclothResolution : 0.5 # 0.5 worked fine for scence with slope, default 2 is not sufficient  
+  write_mesh : True
+  
+  # noise filtering parameters
+  SOR_KNN : 6 
+  SOR_std : 2.0 # 2 is not filtering out all noise, reducing it might filter out some top canopy points, needs further testing
+  write_filtered : True # write noise and ground filtered pointcloud
+
+  # scattering angle filter
+  max_scatter : 80 # threshold at angle calculation step. Maybe change this to 80 as well 
+  max_scatter_voxel : 80 # threshold at voxelization step
+
+  # write original resolution angle file
+  write_angles : True  
+
+  # Subsample options
+  SS_size : 0.02 # subsample voxel size for classification
+  write_ss : True
+
+  write_class_ss : True # write subsampled classified pointcloud
+  write_class : True # write classified pointcloud
+  # Classification options
+  woodcl:
+    class_sel:
+      label: "label"
+      sel: [0,1]
+    output_subfolder: "cc_woodcl"
+    # Below are parameters/configurations for the woodcl method https://github.com/truebelief/cc-TreeAIBox-plugin
+    sys_path_add: "./TreeAI/modules/woodcls/"
+    config_file: "./TreeAI/modules/woodcls/woodcls_branch_tls_segformer3D_112_4cm(GPU8GB).json"
+    model_path: "./TreeAI/models/woodcls_branch_tls_segformer3D_112_4cm(GPU8GB).pth"
+    use_cuda : True # Use GPU
+    progress_bar : null # null in yaml will be read as None in pythonrefer to apply_wood_cls
+
+  FSCT:
+    class_sel:
+      label: "label"
+      sel: [0,1]  # Points classified as ground or leaf
+    output_subfolder: "cc_FSCT"
+    # Below are parameters/configurations for the FSCT method https://github.com/SKrisanski/FSCT
+    # go to ./FSCT/scripts/run_leaf_wood.py for further settings
+    sys_path_add: "./FSCT/scripts/"
+    model_path: "./FSCT/model/"
+    use_CPU_only : False
+    
+    
+
+  voxel_size : 0.05 # Voxel size for the final voxelized output 
+  counts_thresh : 5
+
+  write_voxel : True # write voxelized file in local coordinates
+  write_voxel_global : True # write voxelized file in global coordinates  
+
+  # fields to keep in the voxelized output, and the corresponding voxelization method:
+  # format: output field name: (input field name, voxelization method)
+  voxel_fields_methods : 
+    x: ["X", "mean"]  # Mean of X
+    y: ["Y", "mean"]  # Mean of Y
+    z: ["Z", "mean"]  # Mean of Z
+    HeightAboveGround: ["HeightAboveGround", "mean"]
+    scat: ["scat", "mean"]  # Mean of scatter
+    zen_mean: ["Dip_(degrees)", "mean"]  # Mean of zenith degree
+    zen_mode: ["Dip_(degrees)", "get_highest_frequency_bin"]  # Mode of zenith
+    dir_mode: ["Dip_direction_(degrees)", "get_highest_frequency_bin"]  # Mode of azimuth
+    counts: ["X", "count"]  # Count of points in voxel
+  
+
+  # parameters for counting points in bins for plant area and leaf area estimations
+  bincount_para :
+    "z_min": 0 # minimum Z for counting
+    "z_max": 50 # maximum Z for counting
+    "inc_range": 150 # Range of scanner vertical angles, 150 for LeicaRTC360
+    "z_res": 0.3 # Resolution of height bin
+    "a_bin": 5 # Resolution of vertical angle bin
+    "azi_bin": 5 # Resolution of horizontal anlge bin 
+    "resstr": "_05" # suffix for bincount files indicating bin resolution
+
+StructuralTraits:
+  scanner_para : 
+    "r_res": 20334  # scan row res, 20334 for Leica RTC360
+    "c_res": 8333   # scan col res, 8333 for Leica RTC360
+    "inc_max": 150  # range of TLS angles, 150 for Leica RTC360
+  PAVD:
+    pavd_thresh : 5  # maximum
+    ground_thresh : 2  # below this considered understory/ground
+    PAVD_thres_height : 0.01  # Threshold used for canopy height
+
+    
